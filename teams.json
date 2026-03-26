@@ -1,0 +1,34 @@
+{
+    "teams": {
+        "team1": {
+            "tokens": 5
+        },
+        "team2": {
+            "tokens": 5
+        },
+        "team3": {
+            "tokens": 5
+        },
+        "team4": {
+            "tokens": 5
+        },
+        "team5": {
+            "tokens": 5
+        },
+        "team6": {
+            "tokens": 5
+        },
+        "team7": {
+            "tokens": 5
+        },
+        "team8": {
+            "tokens": 5
+        },
+        "team9": {
+            "tokens": 5
+        },
+        "team10": {
+            "tokens": 5
+        }
+    }
+}

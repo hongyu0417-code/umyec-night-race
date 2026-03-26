@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Night Race | iOS App</title>
+    <!-- Use system fonts for iOS native feel -->
+    <style>
+        :root {
+            /* iOS Dark Mode Colors */
+            --bg-color: #000000;
+            --secondary-bg: #1c1c1e;
+            --tertiary-bg: #2c2c2e;
+            --text-main: #ffffff;
+            --text-secondary: rgba(235, 235, 245, 0.6);
+            --primary: #0a84ff;
+            /* iOS Blue */
+            --emerald: #32d74b;
+            /* iOS Green */
+            --rose: #ff453a;
+            /* iOS Red */
+            --amber: #ffd60a;
+            /* iOS Yellow */
+            --separator: #38383a;
+            --blur-bg: rgba(28, 28, 30, 0.75);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            /* App-like constraint */
+            display: flex;
+            flex-direction: column;
+            overscroll-behavior-y: none;
+        }
+
+        /* App Views */
+        .view-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tab-view {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 24px 20px;
+            padding-bottom: 160px;
+            /* Space for bottom nav and safe area */
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .tab-view.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Typography */
+        h1.large-title {
+            font-size: 34px;
+            font-weight: 800;
+            /* Futuristic weight */
+            margin-bottom: 24px;
+            letter-spacing: 0.8px;
+            /* Slightly wider */
+        }
+
+        h2.section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 32px 0 16px;
+            letter-spacing: 0.5px;
+        }
+
+        /* Header Card */
+        .ios-card {
+            background: rgba(255, 255, 255, 0.05);
+            /* Liquid Glass */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .edit-title-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .edit-title-container h1.large-title {
+            margin-bottom: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 85%;
+        }
+
+        .edit-icon-btn {
+            background: none;
+            border: none;
+            color: var(--primary);
+            margin-left: 10px;
+            padding: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s;
+        }
+
+        .edit-icon-btn:active {
+            opacity: 0.5;
+        }
+
+        .edit-icon-btn svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+        }
+
+        .balance-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .balance-value {
+            font-size: 48px;
+            font-weight: 800;
+            /* Bolder */
+            color: var(--amber);
+            margin-top: 4px;
+            letter-spacing: 1px;
+            /* Spaced out */
+            text-shadow: 0 0 20px rgba(255, 214, 10, 0.4);
+            /* Glowing text */
+        }
+
+        /* Dossier / Terminal style for Case File */
+        .dossier-card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            font-family: Menlo, Consolas, monospace;
+            color: #d1d5db;
+            /* Softer white for reading */
+            margin-bottom: 20px;
+        }
+
+        .dossier-header {
+            border-bottom: 1px dashed #444;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .dossier-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 4px;
+        }
+
+        .dossier-access {
+            font-size: 12px;
+            color: var(--rose);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .dossier-system {
+            font-size: 12px;
+            color: var(--emerald);
+        }
+
+        .dossier-section {
+            margin-top: 20px;
+        }
+
+        .dossier-section-title {
+            font-size: 14px;
+            color: var(--text-main);
+            font-weight: 700;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            text-decoration: underline;
+            text-decoration-color: #555;
+            text-underline-offset: 4px;
+        }
+
+        .dossier-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .dossier-list {
+            list-style: none;
+            margin-top: 8px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .dossier-list li {
+            position: relative;
+            padding-left: 12px;
+            margin-bottom: 6px;
+        }
+
+        .dossier-list li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--primary);
+        }
+
+        .dossier-footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+
+        /* Story Card specific */
+        .video-container {
+            width: 100%;
+            padding-bottom: 56.25%;
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 16px;
+            background: #000;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .story-text {
+            margin-top: 16px;
+            font-size: 15px;
+            line-height: 1.4;
+            color: var(--text-secondary);
+        }
+
+        /* Buttons (Store) */
+        .store-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            background: rgba(255, 255, 255, 0.05);
+            /* Liquid Glass */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border-radius: 14px;
+            padding: 18px 20px;
+            width: 100%;
+            margin-bottom: 12px;
+            color: var(--text-main);
+            font-size: 17px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 8px;
+        }
+
+        .store-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .store-btn-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clue-desc {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-secondary);
+            text-align: left;
+            line-height: 1.4;
+        }
+
+        .store-btn:active {
+            opacity: 0.7;
+        }
+
+        .store-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .cost-badge {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 6px 12px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .cost-l1 {
+            color: var(--emerald);
+        }
+
+        .cost-l2 {
+            color: var(--primary);
+        }
+
+        .cost-l3 {
+            color: var(--rose);
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.05);
+            /* Liquid Glass */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 calc(12px + env(safe-area-inset-bottom, 20px)) 0;
+            z-index: 100;
+            box-shadow: 0 -8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 80px;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+        }
+
+        .nav-icon {
+            width: 26px;
+            height: 26px;
+            margin-bottom: 4px;
+            fill: currentColor;
+        }
+
+        /* Inventory Cards */
+        .inventory-card {
+            background: rgba(255, 255, 255, 0.05);
+            /* Liquid Glass */
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+
+        .inv-badge {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-weight: 700;
+            margin-left: auto;
+            letter-spacing: -0.2px;
+        }
+
+        .inv-badge-l2 {
+            background: rgba(10, 132, 255, 0.15);
+            color: var(--primary);
+        }
+
+        .inv-badge-l3 {
+            background: rgba(255, 69, 58, 0.15);
+            color: var(--rose);
+        }
+
+        .inv-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 14px;
+            gap: 8px;
+        }
+
+        .inv-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .inv-text {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Custom Modals (iOS Alert & Confirm) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .ios-alert-box {
+            background: rgba(44, 44, 46, 0.4);
+            /* Liquid Glass Modals */
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            width: 270px;
+            border-radius: 14px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transform: scale(1.1);
+            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .modal-overlay.visible .ios-alert-box {
+            transform: scale(1);
+        }
+
+        .ios-alert-content {
+            padding: 20px 16px;
+        }
+
+        .ios-alert-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            letter-spacing: -0.4px;
+        }
+
+        .ios-alert-body {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-main);
+            line-height: 1.4;
+        }
+
+        .ios-alert-buttons {
+            display: flex;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .ios-btn {
+            flex: 1;
+            padding: 12px 0;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--primary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            letter-spacing: -0.4px;
+        }
+
+        .ios-btn:active {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .ios-btn.cancel {
+            font-weight: 400;
+            color: var(--primary);
+            border-right: 0.5px solid rgba(255, 255, 255, 0.15);
+        }
+
+        /* Modifying cancel styling for Confirm */
+        .ios-btn.red-confirm {
+            font-weight: 600;
+            color: var(--rose);
+        }
+
+        /* iOS Text Input for Rename Modals */
+        .ios-input-container {
+            margin-top: 12px;
+            padding: 0 4px;
+        }
+
+        .ios-input {
+            width: 100%;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.2);
+            color: var(--text-main);
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .ios-input:focus {
+            border-color: var(--primary);
+        }
+
+        /* Mystery Card Reveal */
+        .reveal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .reveal-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .scene {
+            width: 320px;
+            height: 480px;
+            perspective: 1200px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+            cursor: default;
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        }
+
+        .card-front {
+            background: #111;
+            background-image:
+                linear-gradient(30deg, #1c1c1e 12%, transparent 12.5%, transparent 87%, #1c1c1e 87.5%, #1c1c1e),
+                linear-gradient(150deg, #1c1c1e 12%, transparent 12.5%, transparent 87%, #1c1c1e 87.5%, #1c1c1e),
+                linear-gradient(30deg, #1c1c1e 12%, transparent 12.5%, transparent 87%, #1c1c1e 87.5%, #1c1c1e),
+                linear-gradient(150deg, #1c1c1e 12%, transparent 12.5%, transparent 87%, #1c1c1e 87.5%, #1c1c1e),
+                linear-gradient(60deg, #2c2c2e 25%, transparent 25.5%, transparent 75%, #2c2c2e 75%, #2c2c2e),
+                linear-gradient(60deg, #2c2c2e 25%, transparent 25.5%, transparent 75%, #2c2c2e 75%, #2c2c2e);
+            background-size: 40px 70px;
+            background-position: 0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 20px rgba(10, 132, 255, 0.3), inset 0 0 30px rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+        }
+
+        .card-inner-border {
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 20px;
+        }
+
+        .card-icon {
+            margin-bottom: 24px;
+            color: var(--primary);
+        }
+
+        .card-front h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 5px;
+            color: #fff;
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+        }
+
+        .card-front p {
+            margin-top: 30px;
+            font-size: 13px;
+            color: var(--primary);
+            animation: pulse 1.5s infinite;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .card-back {
+            background: var(--secondary-bg);
+            transform: rotateY(180deg);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .card-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .card-content p {
+            font-size: 17px;
+            line-height: 1.5;
+            text-align: center;
+            color: var(--text-main);
+        }
+
+        .close-reveal-container {
+            margin-top: 40px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease 0.4s;
+        }
+
+        .reveal-overlay.show-button .close-reveal-container {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .close-reveal-btn {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(10, 132, 255, 0.4);
+        }
+
+        .close-reveal-btn:active {
+            opacity: 0.8;
+            transform: scale(0.98);
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes fadeUpIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Intro Sequence */
+        #intro-sequence {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #0b0f19;
+            z-index: 20000;
+            display: flex;
+            flex-direction: column;
+            padding: 60px 24px;
+            font-family: Menlo, Consolas, 'Courier New', monospace;
+            transition: opacity 0.8s ease;
+        }
+
+        #intro-sequence.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .typewriter-line {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeUpIn 0.5s forwards;
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .typewriter-line::before {
+            content: "> ";
+            color: var(--emerald);
+        }
+
+        #intro-btn-container {
+            margin-top: auto;
+            margin-bottom: 20px;
+            opacity: 0;
+            animation: fadeIn 1s ease 6.5s forwards;
+            text-align: center;
+        }
+
+        .intro-btn {
+            background: rgba(255, 255, 255, 0.05);
+            /* Liquid Glass */
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            color: var(--emerald);
+            border: 1px solid rgba(50, 215, 75, 0.3);
+            padding: 16px 20px;
+            font-family: inherit;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(50, 215, 75, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            border-radius: 8px;
+            width: 100%;
+        }
+
+        .intro-btn:active {
+            background: rgba(50, 215, 75, 0.15);
+            box-shadow: 0 0 25px rgba(50, 215, 75, 0.4), inset 0 0 15px rgba(50, 215, 75, 0.3);
+            transform: scale(0.98);
+        }
+
+        /* Utils */
+        .hidden {
+            display: none !important;
+        }
+
+        .center-msg {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 40px 20px;
+            font-size: 15px;
+        }
+
+        /* Image Viewer Modal */
+        #image-viewer-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            z-index: 30000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            touch-action: pan-x pan-y pinch-zoom;
+        }
+
+        #image-viewer-modal.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #viewer-image {
+            max-width: 100vw;
+            max-height: 100vh;
+            object-fit: contain;
+            transform: translateZ(0);
+        }
+
+        .close-viewer-btn {
+            position: absolute;
+            top: max(20px, env(safe-area-inset-top, 20px));
+            right: 20px;
+            background: rgba(40, 40, 40, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .close-viewer-btn svg {
+            fill: #fff;
+            width: 18px;
+            height: 18px;
+        }
+
+        .inventory-thumbnail {
+            cursor: pointer;
+            transition: transform 0.1s ease;
+        }
+
+        .inventory-thumbnail:active {
+            transform: scale(0.97);
+        }
+
+        /* LIQUID GLASS DESIGN SYSTEM */
+        .liquid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #05050a;
+            /* Deep dark translucent color */
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: drift 20s infinite alternate ease-in-out;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: rgba(10, 132, 255, 0.4);
+            /* Deep blue */
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: rgba(138, 43, 226, 0.3);
+            /* Purple */
+            bottom: -150px;
+            right: -100px;
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: rgba(50, 215, 75, 0.3);
+            /* Emerald */
+            top: 40%;
+            left: 30%;
+            animation-delay: -10s;
+        }
+
+        @keyframes drift {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            50% {
+                transform: translate(100px, 50px) scale(1.1);
+            }
+
+            100% {
+                transform: translate(-50px, 100px) scale(0.9);
+            }
+        }
+
+        /* HQ Broadcast Modal */
+        #hq-broadcast-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(40, 0, 0, 0.7);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            z-index: 99999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        #hq-broadcast-modal.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .hq-broadcast-card {
+            background: rgba(20, 0, 0, 0.6);
+            border: 1px solid rgba(255, 69, 58, 0.6);
+            box-shadow: 0 0 40px rgba(255, 69, 58, 0.3);
+            border-radius: 16px;
+            padding: 30px 24px;
+            width: 85%;
+            max-width: 400px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #hq-broadcast-modal.visible .hq-broadcast-card {
+            transform: scale(1);
+        }
+        
+        .hq-warning-header {
+            color: var(--rose);
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0% { opacity: 0.6; text-shadow: 0 0 10px rgba(255,69,58,0.4); }
+            50% { opacity: 1; text-shadow: 0 0 20px rgba(255,69,58,0.8); }
+            100% { opacity: 0.6; text-shadow: 0 0 10px rgba(255,69,58,0.4); }
+        }
+
+        .hq-message-body {
+            font-size: 16px;
+            line-height: 1.5;
+            color: #fff;
+            margin-bottom: 30px;
+            background: rgba(0,0,0,0.3);
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 3px solid var(--rose);
+            text-align: left;
+        }
+
+        .hq-ack-btn {
+            background: rgba(255, 69, 58, 0.2);
+            color: var(--rose);
+            border: 1px solid var(--rose);
+            padding: 14px 24px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        .hq-ack-btn:active {
+            background: rgba(255, 69, 58, 0.4);
+            transform: scale(0.98);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Liquid Background -->
+    <div class="liquid-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <!-- Intro Sequence -->
+    <div id="intro-sequence">
+        <div class="typewriter-line" style="animation-delay: 0.5s;">SYSTEM INITIATING...</div>
+        <div class="typewriter-line" style="animation-delay: 1.8s;">CREDENTIALS VERIFIED: SPECIAL DETECTIVE UNIT.</div>
+        <div class="typewriter-line" style="animation-delay: 3.2s;">MISSION DIRECTIVE: The idol is dead. The stage is a
+            crime scene.</div>
+        <div class="typewriter-line" style="animation-delay: 4.8s;">OBJECTIVE: Expose the Mastermind, the Method, and
+            the Motive.</div>
+
+        <div id="intro-btn-container">
+            <button class="intro-btn" onclick="acceptMission()">[ ACCEPT MISSION & ENTER CRIME SCENE ]</button>
+        </div>
+    </div>
+
+    <!-- Connecting overlay -->
+    <div id="loading" class="center-msg" style="margin-top: 60vh; font-size: 17px;">Connecting to secure server...</div>
+
+    <!-- Error container -->
+    <div id="error-container" class="center-msg hidden" style="margin-top: 40vh;">
+        <svg viewBox="0 0 24 24" style="width: 48px; height: 48px; fill: var(--rose); margin-bottom: 16px;">
+            <path
+                d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z" />
+        </svg>
+        <h2 style="color: var(--text-main); font-size: 22px; margin-bottom: 8px;">Invalid Link</h2>
+        <p>Please ensure you are using the correct team link (e.g. ?team=1)</p>
+    </div>
+
+    <!-- View Layer -->
+    <div class="view-container hidden" id="app-container">
+
+        <!-- STORE TAB -->
+        <div id="view-store" class="tab-view">
+            <div class="edit-title-container">
+                <h1 class="large-title" id="team-name">Group X</h1>
+                <button class="edit-icon-btn" onclick="showRenameModal()" aria-label="Edit team name">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="ios-card" style="text-align: center; padding: 24px;">
+                <div class="balance-label">Current Balance</div>
+                <div class="balance-value" id="token-balance">--</div>
+            </div>
+
+
+            <h2 class="section-title">Clue Store</h2>
+            <button class="store-btn" data-level="1" data-cost="1">
+                <div class="store-btn-header">
+                    <span>Level 1 Clue</span>
+                    <span class="cost-badge cost-l1">1 Token</span>
+                </div>
+                <div class="clue-desc">Ask the Clue Master one Yes/No question. You must find the Clue Master
+                    yourselves. Please confirm this purchase directly in front of them.</div>
+            </button>
+            <button class="store-btn" data-level="2" data-cost="3">
+                <div class="store-btn-header">
+                    <span>Level 2 Clue</span>
+                    <span class="cost-badge cost-l2">3 Tokens</span>
+                </div>
+                <div class="clue-desc">Access classified, photo-based evidence.</div>
+            </button>
+            <button class="store-btn" data-level="3" data-cost="7">
+                <div class="store-btn-header">
+                    <span>Level 3 Clue</span>
+                    <span class="cost-badge cost-l3">7 Tokens</span>
+                </div>
+                <div class="clue-desc">Access highly restricted, video-based audio evidence. These are higher-level and
+                    highly specific clues.</div>
+            </button>
+        </div>
+
+        <!-- INVENTORY TAB -->
+        <div id="view-inventory" class="tab-view">
+            <h1 class="large-title">Inventory</h1>
+
+            <!-- Clue Progress Tracker -->
+            <div class="ios-card"
+                style="display: flex; justify-content: space-between; align-items: center; padding: 16px; margin-bottom: 20px;">
+                <div style="flex: 1; text-align: center; border-right: 1px solid rgba(255, 255, 255, 0.1);">
+                    <div
+                        style="font-size: 12px; color: var(--primary); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">
+                        Level 2 Evidence</div>
+                    <div style="font-size: 20px; font-weight: 800; color: var(--text-main);"><span
+                            id="l2-tracker">0</span> / 10</div>
+                </div>
+                <div style="flex: 1; text-align: center;">
+                    <div
+                        style="font-size: 12px; color: var(--rose); font-weight: 700; text-transform: uppercase; margin-bottom: 4px; letter-spacing: 0.5px;">
+                        Level 3 Evidence</div>
+                    <div style="font-size: 20px; font-weight: 800; color: var(--text-main);"><span
+                            id="l3-tracker">0</span> / 5</div>
+                </div>
+            </div>
+
+            <div id="inventory-container">
+                <!-- Clues injected here -->
+            </div>
+        </div>
+
+        <!-- CASE FILE TAB -->
+        <div id="view-casefile" class="tab-view">
+            <h1 class="large-title">Case File</h1>
+
+            <div class="dossier-card">
+                <div class="dossier-header">
+                    <div class="dossier-title">Title: The Final Curtain Fall</div>
+                    <div class="dossier-access">Access Level: Special Detective Unit</div>
+                    <div class="dossier-system">[ SYSTEM INITIATING... ]</div>
+                </div>
+
+                <div class="dossier-section">
+                    <div class="dossier-section-title">The Incident:</div>
+                    <div class="dossier-text">
+                        The spotlight has burned out. Tonight, renowned idol Elson Ting collapsed and was found dead
+                        backstage immediately following a highly anticipated performance. The stage was set, the
+                        audience was blind, and
+                        the killer walked away completely unnoticed. We have a body, we have a complex web of suspects,
+                        but we do not have the truth.
+                    </div>
+                </div>
+
+                <div class="dossier-section">
+                    <div class="dossier-section-title">The Suspects:</div>
+                    <div class="dossier-text">Our preliminary sweep indicates several individuals had direct access to
+                        the victim, his items, or harbored potential motives:</div>
+                    <ul class="dossier-list">
+                        <li><strong>Kayser (Company Director):</strong> The powerful executive pulling the strings of
+                            Elson's career.</li>
+                        <li><strong>CC (The Manager):</strong> The handler who oversaw Elson's backstage needs,
+                            schedules, and drinks.</li>
+                        <li><strong>Ryan (The Assistant):</strong> The stressed staff member physically closest to the
+                            idol throughout the day.</li>
+                        <li><strong>Weihao (Financial Auditor):</strong> The company's internal auditor, keeping a close
+                            eye on the books.</li>
+                        <li><strong>Neo (Fellow Idol):</strong> Elson's stage contemporary and suspected rival.</li>
+                        <li><strong>Jiongxi (Stage Crew Leader):</strong> The technical chief responsible for backstage
+                            props and placements.</li>
+                    </ul>
+                </div>
+
+                <div class="dossier-section">
+                    <div class="dossier-section-title">Your Mission:</div>
+                    <div class="dossier-text">
+                        Do not look for a monster in the shadows; the true monster awaits in the light. Navigate the
+                        game stations, earn tokens, and decrypt the evidence. Beware of false leads and hidden
+                        alliances. To win, submit a final report answering:
+                        <br><br>
+                        <strong>1. The Mastermind:</strong> Who truly orchestrated the murder?<br>
+                        <strong>2. The Method:</strong> How exactly was the murder carried out mechanically?<br>
+                        <strong>3. The Motive:</strong> Why did Elson Ting have to die?<br><br>
+                        The clock is ticking. You have until 9:30 PM. May the performance begin.
+                    </div>
+                </div>
+
+                <div class="dossier-footer">[ END OF TRANSMISSION ]</div>
+            </div>
+
+            <!-- Header Trailer iOS style -->
+            <div class="ios-card">
+                <h2 class="section-title" style="margin-top: 0;">Case File: The Final Curtain Fall</h2>
+                <div class="video-container">
+                    <iframe src="https://www.youtube.com/embed/nOnfI4xQfi4?si=dxZgpcDeK1JIihcJ"
+                        title="YouTube video player" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen></iframe>
+                </div>
+                <p class="story-text">You are the Special Detective Unit. We have a body, we have suspects, but we don't
+                    have answers. Your mission tonight is to find the truth behind the final curtain call... Do not look
+                    for the monster in the shadows, for the monster is the man who awaits in the light.</p>
+            </div>
+
+        </div>
+
+        <!-- DIRECTIVES TAB -->
+        <div id="view-directives" class="tab-view active">
+            <h1 class="large-title">Operational Directives</h1>
+
+            <div class="dossier-card">
+                <div class="dossier-header">
+                    <div class="dossier-title">Title: Rules of Engagement</div>
+                    <div class="dossier-access">Access Level: Special Detective Unit</div>
+                    <div class="dossier-system">[ SECURE CONNECTION ESTABLISHED ]</div>
+                </div>
+
+                <div class="dossier-section">
+                    <div class="dossier-section-title">Operations</div>
+                    <ul class="dossier-list">
+                        <li><strong>Cost:</strong> 1 token per game station.</li>
+                        <li><strong>Success:</strong> Within time limit = 5 tokens gained.</li>
+                        <li><strong>Failure:</strong> Over time limit = 3 tokens gained.</li>
+                    </ul>
+                </div>
+
+                <div class="dossier-section">
+                    <div class="dossier-section-title">Squads</div>
+                    <ul class="dossier-list">
+                        <li><strong>Capacity:</strong> Max 2 teams per station (First come, first serve).</li>
+                        <li><strong>Formation:</strong> Must move in a group; game cannot start if a member is missing.
+                        </li>
+                        <li><strong>Logistics:</strong> Ask a Facilitator (Liaison) if you don't know where a station
+                            is.</li>
+                    </ul>
+                </div>
+
+                <div class="dossier-section">
+                    <div class="dossier-section-title">Entities</div>
+                    <ul class="dossier-list">
+                        <li><strong>Trigger:</strong> Trigger NPCs by asking the exact phrase: "Are you the murderer?"
+                        </li>
+                        <li><strong>Classified:</strong> There are hidden lines/passwords needed to trigger certain NPCs
+                            to speak.</li>
+                        <li><strong>Authority:</strong> Find the Police Officer to use the Level 1 Yes/No token.</li>
+                        <li><strong>Zero Contact:</strong> Do NOT touch the NPCs under any circumstances.</li>
+                    </ul>
+                </div>
+
+                <div class="dossier-section">
+                    <div class="dossier-section-title">Medical</div>
+                    <ul class="dossier-list">
+                        <li><strong>Facility:</strong> First aid station is at Block Y.</li>
+                        <li><strong>Protocol:</strong> Report to a Facilitator before going.</li>
+                    </ul>
+                </div>
+
+                <div class="dossier-section">
+                    <div class="dossier-section-title">Final Protocol</div>
+                    <div class="dossier-text" style="color: var(--amber); font-weight: bold; margin-bottom: 8px;">[
+                        CRITICAL DIRECTIVE ]</div>
+                    <ul class="dossier-list">
+                        <li><strong>Window:</strong> 9:00 PM – 9:30 PM.</li>
+                        <li><strong>Restriction:</strong> Only ONE final guess allowed per team.</li>
+                        <li><strong>Submission:</strong> Submit the guess to Chief Inspector Shan Yu at Block Y.</li>
+                        <li><strong>Deadline:</strong> No guess submitted by 9:30 PM = Disqualified.</li>
+                        <li><strong>Gathering:</strong> All teams must gather at Block Y lobby at 9:30 PM sharp.</li>
+                    </ul>
+                </div>
+
+                <div class="dossier-footer">[ END OF PROTOCOL ]</div>
+            </div>
+
+            <!-- TACTICAL MAP -->
+            <div class="ios-card">
+                <h2 class="section-title" style="margin-top: 0;">Tactical Map</h2>
+                <img src="images/11.png" alt="Tactical Map" onclick="openImageViewer('images/11.png')"
+                    style="width: 100%; border-radius: 12px; cursor: pointer; border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav hidden" id="bottom-nav">
+        <div class="nav-item active" data-target="view-directives">
+            <!-- Map/Clipboard Directive icon -->
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path
+                    d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z" />
+            </svg>
+            <span>Directives</span>
+        </div>
+        <div class="nav-item" data-target="view-casefile">
+            <!-- Folder or Document icon -->
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
+            </svg>
+            <span>Case File</span>
+        </div>
+        <div class="nav-item" data-target="view-store">
+            <!-- iOS Safari icon approximation -->
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.35 6.65L12 14.8l-4.35-6.15C7.4 8.28 7 8.64 7 9.1v9.8c0 .61.49 1.1 1.1 1.1h7.8c.61 0 1.1-.49 1.1-1.1s-.49-1.1-1.1-1.1h-6.7v-7.8l3.6 5.1c.3.43.91.43 1.2 0l4.35-6.15c.25-.37-.21-.82-.6-.65z" />
+                <path fill="currentColor"
+                    d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5.5 12.5h-11v-11h11v11zm-5.5-2L8.5 7h7z" />
+            </svg>
+            <span>Store</span>
+        </div>
+        <div class="nav-item" data-target="view-inventory">
+            <!-- iOS Briefcase or List icon -->
+            <svg class="nav-icon" viewBox="0 0 24 24">
+                <path
+                    d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM10 4h4v2h-4V4zm10 16H4V8h16v12z" />
+            </svg>
+            <span>Inventory</span>
+        </div>
+    </nav>
+
+    <!-- Modals & Overlays -->
+    <!-- Alert Modal -->
+    <div id="custom-alert" class="modal-overlay">
+        <div class="ios-alert-box">
+            <div class="ios-alert-content">
+                <div class="ios-alert-title" id="alert-title">Alert</div>
+                <div class="ios-alert-body" id="alert-body">Message</div>
+            </div>
+            <div class="ios-alert-buttons">
+                <button class="ios-btn" onclick="hideAlert()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="custom-confirm" class="modal-overlay">
+        <div class="ios-alert-box">
+            <div class="ios-alert-content">
+                <div class="ios-alert-title">Confirm Purchase</div>
+                <div class="ios-alert-body" id="confirm-body">Are you sure?</div>
+            </div>
+            <div class="ios-alert-buttons">
+                <button class="ios-btn cancel" onclick="hideConfirm()">Cancel</button>
+                <button class="ios-btn red-confirm" id="confirm-ok-btn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rename Modal -->
+    <div id="rename-modal" class="modal-overlay">
+        <div class="ios-alert-box">
+            <div class="ios-alert-content" style="padding-bottom: 12px;">
+                <div class="ios-alert-title">Rename Your Detective Agency</div>
+                <div class="ios-alert-body">Enter a new team name:</div>
+                <div class="ios-input-container">
+                    <input type="text" id="rename-input" class="ios-input" placeholder="e.g. Baker St Irregulars"
+                        autocomplete="off" maxlength="30">
+                </div>
+            </div>
+            <div class="ios-alert-buttons">
+                <button class="ios-btn cancel" onclick="hideRenameModal()">Cancel</button>
+                <button class="ios-btn" id="rename-save-btn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mandatory Briefing Card Overlay -->
+    <div id="briefing-overlay" class="reveal-overlay">
+        <div class="scene" onclick="flipBriefingCard()">
+            <div class="card" id="briefing-card">
+                <div class="card-face card-front">
+                    <div class="card-inner-border">
+                        <svg class="card-icon" viewBox="0 0 24 24" width="48" height="48">
+                            <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            <rect x="9" y="11" width="6" height="8" rx="1" fill="currentColor" />
+                            <circle cx="12" cy="11" r="3" fill="none" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                        <h2 style="font-size: 18px; letter-spacing: 2px;">TOP SECRET</h2>
+                        <p style="margin-top: 15px; font-size: 11px;">Operational Directives.<br><br>Tap to break seal.
+                        </p>
+                    </div>
+                </div>
+                <!-- Card back: overflow-y: auto to allow scrolling rules & map -->
+                <div class="card-face card-back"
+                    style="overflow-y: auto; display: block; padding: 24px 20px 80px 20px;">
+                    <div class="card-title" style="margin-top: 0; font-size: 16px;">Directives</div>
+                    <div style="font-size: 12px; color: var(--text-main); line-height: 1.5; text-align: left;">
+                        <ul style="padding-left: 16px; margin-bottom: 16px;">
+                            <li style="margin-bottom:6px;"><strong>Tokens:</strong> 1 token per station. Success = 5
+                                tokens. Fail = 3 tokens.</li>
+                            <li style="margin-bottom:6px;"><strong>Squads:</strong> Max 2 teams/station. Must move
+                                together. Missing member = no start.</li>
+                            <li style="margin-bottom:6px;"><strong>NPCs:</strong> Trigger phrase: "Are you the
+                                murderer?". Do NOT touch NPCs. Hidden lines unlock extra dialogue.</li>
+                            <li style="margin-bottom:6px;"><strong>Finale:</strong> 9:00-9:30 PM. Only ONE final guess
+                                to Chief Inspector Shan Yu at Block Y. No guess by 9:30 PM = Disqualified. 9:30 PM
+                                gathering.</li>
+                        </ul>
+                        <div style="text-align:center; font-weight:bold; margin-bottom:10px; color: var(--amber);">
+                            Tactical Map</div>
+                        <img src="images/11.png" alt="Tactical Map" onclick="window.openImageViewer('images/11.png')"
+                            style="width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); cursor: pointer;">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="close-reveal-container" style="opacity: 1; pointer-events: auto; position: absolute; bottom: 30px;">
+            <button class="close-reveal-btn" onclick="acknowledgeBriefing(event)"
+                style="font-size: 14px; padding: 12px 24px;">Acknowledge Directives</button>
+        </div>
+    </div>
+
+    <!-- Reveal Mystery Card Overly -->
+    <div id="reveal-screen" class="reveal-overlay">
+        <div class="scene" onclick="flipCard()">
+            <div class="card" id="mystery-card">
+                <div class="card-face card-front">
+                    <div class="card-inner-border">
+                        <svg class="card-icon" viewBox="0 0 24 24" width="48" height="48">
+                            <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round"></circle>
+                        </svg>
+                        <h2>Classified</h2>
+                        <p>Tap to reveal evidence</p>
+                    </div>
+                </div>
+                <div class="card-face card-back">
+                    <div class="card-title" id="reveal-title">Acquired Evidence</div>
+                    <div class="card-content" id="reveal-content">
+                        <!-- Clue content injected -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="close-reveal-container">
+            <button class="close-reveal-btn" onclick="closeReveal(event)">Close & Save to Inventory</button>
+        </div>
+    </div>
+
+    <!-- Image Viewer Modal -->
+    <div id="image-viewer-modal">
+        <button class="close-viewer-btn" onclick="window.closeImageViewer()" aria-label="Close">
+            <svg viewBox="0 0 24 24">
+                <path
+                    d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+            </svg>
+        </button>
+        <img id="viewer-image" src="" alt="Full Screen Evidence">
+    </div>
+
+    <!-- HQ Broadcast Modal -->
+    <div id="hq-broadcast-modal">
+        <div class="hq-broadcast-card">
+            <div class="hq-warning-header">🚨 INCOMING HQ DIRECTIVE 🚨</div>
+            <div class="hq-message-body" id="hq-message-text"></div>
+            <button class="hq-ack-btn" onclick="acknowledgeBroadcast()">Acknowledge</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (Modular ESM format) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, onValue, runTransaction, update } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // ==========================================
+        // FIREBASE CONFIGURATION
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5_nwGNACrq7M01EsFFL-ZpQkbcqeARfE",
+            authDomain: "umyec-night-race-219f6.firebaseapp.com",
+            databaseURL: "https://umyec-night-race-219f6-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "umyec-night-race-219f6",
+            storageBucket: "umyec-night-race-219f6.firebasestorage.app",
+            messagingSenderId: "315048773537",
+            appId: "1:315048773537:web:878d1280726c61ffb86de0",
+            measurementId: "G-CF1RGK7LXQ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+
+        // Parse URL Parameters (?team=X)
+        const urlParams = new URLSearchParams(window.location.search);
+        const teamParam = urlParams.get('team');
+        const teamId = parseInt(teamParam, 10);
+
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('error-container');
+        const appEl = document.getElementById('app-container');
+        const bottomNav = document.getElementById('bottom-nav');
+
+        // --- Intro Sequence Logic ---
+        const introSequence = document.getElementById('intro-sequence');
+        if (sessionStorage.getItem('introPlayed') === 'true') {
+            introSequence.style.display = 'none';
+        }
+
+        window.acceptMission = () => {
+            introSequence.classList.add('hidden');
+            sessionStorage.setItem('introPlayed', 'true');
+
+            // Bring up the mandatory briefing card instead of dropping to app
+            if (sessionStorage.getItem('briefingPlayed') !== 'true') {
+                document.getElementById('briefing-overlay').classList.add('visible');
+            } else {
+                appEl.classList.remove('hidden');
+                bottomNav.classList.remove('hidden');
+            }
+
+            setTimeout(() => {
+                introSequence.style.display = 'none';
+            }, 800); // match transition duration
+        };
+
+        window.flipBriefingCard = () => {
+            const card = document.getElementById('briefing-card');
+            if (!card.classList.contains('is-flipped')) {
+                card.classList.add('is-flipped');
+            }
+        };
+
+        window.acknowledgeBriefing = (e) => {
+            e.stopPropagation();
+            document.getElementById('briefing-overlay').classList.remove('visible');
+            sessionStorage.setItem('briefingPlayed', 'true');
+
+            setTimeout(() => {
+                document.getElementById('briefing-overlay').style.display = 'none';
+                appEl.classList.remove('hidden');
+                bottomNav.classList.remove('hidden');
+            }, 300);
+        };
+
+        if (!teamParam || isNaN(teamId) || teamId < 1 || teamId > 10) {
+            loadingEl.classList.add('hidden');
+            errorEl.classList.remove('hidden');
+            console.error("Invalid or missing team URL parameter.");
+        } else {
+            // UI Element References
+            const teamNameTitle = document.getElementById('team-name');
+            teamNameTitle.textContent = `Group ${teamId}`; // Default fallback
+
+            const balanceEl = document.getElementById('token-balance');
+            const buttons = document.querySelectorAll('.store-btn');
+
+            // --- UI Mechanics: Modals and Alerts ---
+            window.hideAlert = () => document.getElementById('custom-alert').classList.remove('visible');
+            window.showAlert = (title, message) => {
+                document.getElementById('alert-title').innerText = title;
+                document.getElementById('alert-body').innerText = message;
+                document.getElementById('custom-alert').classList.add('visible');
+            };
+
+            let confirmCallback = null;
+            window.hideConfirm = () => document.getElementById('custom-confirm').classList.remove('visible');
+            window.showConfirm = (msg, onConfirm) => {
+                document.getElementById('confirm-body').innerText = msg;
+                confirmCallback = onConfirm;
+                document.getElementById('custom-confirm').classList.add('visible');
+            };
+            document.getElementById('confirm-ok-btn').addEventListener('click', () => {
+                hideConfirm();
+                if (confirmCallback) confirmCallback();
+            });
+
+            // Rename Modal Mechanics
+            const renameParams = {
+                modal: document.getElementById('rename-modal'),
+                input: document.getElementById('rename-input'),
+                saveBtn: document.getElementById('rename-save-btn')
+            };
+            window.showRenameModal = () => {
+                renameParams.input.value = '';
+                renameParams.modal.classList.add('visible');
+                setTimeout(() => renameParams.input.focus(), 100);
+            };
+            window.hideRenameModal = () => {
+                renameParams.modal.classList.remove('visible');
+                renameParams.input.blur();
+            };
+
+            // --- UI Mechanics: Image Viewer ---
+            window.openImageViewer = (imageUrl) => {
+                const viewerImg = document.getElementById('viewer-image');
+                viewerImg.src = imageUrl;
+                document.getElementById('image-viewer-modal').classList.add('visible');
+            };
+            window.closeImageViewer = () => {
+                document.getElementById('image-viewer-modal').classList.remove('visible');
+                setTimeout(() => {
+                    document.getElementById('viewer-image').src = '';
+                }, 300);
+            };
+
+            // --- UI Mechanics: Tabs ---
+            const navItems = document.querySelectorAll('.nav-item');
+            const tabViews = document.querySelectorAll('.tab-view');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    navItems.forEach(n => n.classList.remove('active'));
+                    item.classList.add('active');
+                    const targetId = item.dataset.target;
+                    tabViews.forEach(v => {
+                        v.classList.remove('active');
+                        if (v.id === targetId) v.classList.add('active');
+                    });
+                });
+            });
+
+            function switchTab(tabId) {
+                document.querySelector(`.nav-item[data-target="${tabId}"]`).click();
+            }
+
+            // --- UI Mechanics: Mystery Card ---
+            window.flipCard = () => {
+                const card = document.getElementById('mystery-card');
+                if (!card.classList.contains('is-flipped')) {
+                    card.classList.add('is-flipped');
+                    document.getElementById('reveal-screen').classList.add('show-button');
+                }
+            };
+            window.closeReveal = (e) => {
+                e.stopPropagation();
+                document.getElementById('reveal-screen').classList.remove('visible', 'show-button');
+                // Remove flip for next time and switch tab smoothly
+                setTimeout(() => {
+                    document.getElementById('mystery-card').classList.remove('is-flipped');
+                    switchTab('view-inventory');
+                }, 300);
+            };
+            window.showReveal = (clueObj) => {
+                document.getElementById('reveal-title').innerText = clueObj.title;
+                const contentBox = document.getElementById('reveal-content');
+                if (clueObj.type === 'video') {
+                    contentBox.innerHTML = `<div class="video-container" style="margin:0;"><iframe src="${clueObj.content}" frameborder="0" allowfullscreen></iframe></div>`;
+                } else {
+                    let imageHtml = '';
+                    if (clueObj.image) {
+                        imageHtml = `<img src="${clueObj.image}" alt="Evidence" style="width: 100%; border-radius: 4px; border: 4px solid #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin-bottom: 16px; object-fit: cover;">`;
+                    }
+                    contentBox.innerHTML = `${imageHtml}<p>${clueObj.content}</p>`;
+                }
+                document.getElementById('reveal-screen').classList.add('visible');
+            };
+
+            // --- HQ Broadcast Listener ---
+            window.acknowledgeBroadcast = () => {
+                document.getElementById('hq-broadcast-modal').classList.remove('visible');
+            };
+
+            let lastBroadcastTime = 0;
+            const broadcastRef = ref(db, 'global_state/hq_broadcast');
+            onValue(broadcastRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.message && data.message.trim() !== '') {
+                    // Check if timestamp is newer
+                    const msgTime = data.timestamp || 0;
+                    if (msgTime > lastBroadcastTime) {
+                        lastBroadcastTime = msgTime; // Update to prevent re-triggering for same message
+                        document.getElementById('hq-message-text').innerText = data.message;
+                        document.getElementById('hq-broadcast-modal').classList.add('visible');
+                    }
+                }
+            });
+
+            // --- Firebase Logic ---
+            const db = getDatabase(app);
+            const teamRef = ref(db, `teams/team${teamId}`);
+            let unlockedClues = [];
+
+            // Rename Action Logic
+            renameParams.saveBtn.addEventListener('click', async () => {
+                const newName = renameParams.input.value.trim();
+                if (!newName) return hideRenameModal();
+
+                renameParams.saveBtn.disabled = true;
+                try {
+                    await update(teamRef, { name: newName });
+                    hideRenameModal();
+                } catch (error) {
+                    console.error("Failed to rename:", error);
+                    showAlert("Error", "Could not rename team. Please try again.");
+                } finally {
+                    renameParams.saveBtn.disabled = false;
+                }
+            });
+
+            const masterClues = {
+                level2: [
+                    { id: 'l2_1', type: 'text', title: 'Assistant phone search history', content: 'Evidence file accessed.', image: 'images/1.png' },
+                    { id: 'l2_2', type: 'text', title: 'Backstage rules and regulations', content: 'Evidence file accessed.', image: 'images/2.png' },
+                    { id: 'l2_3', type: 'text', title: 'Chat between assistant and director', content: 'Evidence file accessed.', image: 'images/3.png' },
+                    { id: 'l2_4', type: 'text', title: 'Conversation between idol and his friend', content: 'Evidence file accessed.', image: 'images/4.png' },
+                    { id: 'l2_5', type: 'text', title: 'Family photo of financial auditor and director', content: 'Evidence file accessed.', image: 'images/5.png' },
+                    { id: 'l2_6', type: 'text', title: 'Manager receipt', content: 'Evidence file accessed.', image: 'images/6.png' },
+                    { id: 'l2_7', type: 'text', title: 'Financial misuse invoice', content: 'Evidence file accessed.', image: 'images/7.png' },
+                    { id: 'l2_8', type: 'text', title: 'Police Interrogation Record', content: 'Evidence file accessed.', image: 'images/8.png' },
+                    { id: 'l2_9', type: 'text', title: 'Water bottle evidence', content: 'Evidence file accessed.', image: 'images/9.png' },
+                    { id: 'l2_10', type: 'video', title: 'Conversation between director and financial audit', content: 'https://www.youtube.com/embed/VQ557cadYCU' }
+                ],
+                level3: [
+                    { id: 'l3_1', type: 'video', title: 'Director and doctor conversation', content: 'https://www.youtube.com/embed/4gEIMSOONNU' },
+                    { id: 'l3_2', type: 'video', title: 'Conversation between director and manager', content: 'https://www.youtube.com/embed/61RMNFxEgRc' },
+                    { id: 'l3_3', type: 'video', title: 'Chat between director and assistant', content: 'https://www.youtube.com/embed/uEBxX6XEOuo' },
+                    { id: 'l3_4', type: 'video', title: 'Conversation between crew leader and policeman', content: 'https://www.youtube.com/embed/Vj47LcJHuqE' },
+                    { id: 'l3_5', type: 'text', title: 'Financial misuse by director and financial auditor', content: 'Evidence file accessed.', image: 'images/10.png' }
+                ]
+            };
+
+            function renderInventory(clueIds) {
+                const container = document.getElementById('inventory-container');
+                container.innerHTML = '';
+
+                // Update Progress Trackers
+                let l2Count = 0;
+                let l3Count = 0;
+                if (clueIds && clueIds.length > 0) {
+                    l2Count = clueIds.filter(id => id.startsWith('l2')).length;
+                    l3Count = clueIds.filter(id => id.startsWith('l3')).length;
+                }
+                const l2Tracker = document.getElementById('l2-tracker');
+                const l3Tracker = document.getElementById('l3-tracker');
+                if (l2Tracker) l2Tracker.textContent = l2Count;
+                if (l3Tracker) l3Tracker.textContent = l3Count;
+
+                if (!clueIds || clueIds.length === 0) {
+                    container.innerHTML = '<div class="center-msg">No evidence collected yet. Visit the store to uncover clues.</div>';
+                    return;
+                }
+
+                const allClues = [...masterClues.level2, ...masterClues.level3];
+                const ownedClues = clueIds.map(id => allClues.find(c => c.id === id)).filter(Boolean);
+
+                ownedClues.forEach(clue => {
+                    const level = clue.id.startsWith('l2') ? 2 : 3;
+                    const card = document.createElement('div');
+                    card.className = `inventory-card`;
+
+                    let contentHtml = '';
+                    if (clue.type === 'video') {
+                        contentHtml = `<div class="video-container" style="margin-top: 12px;"><iframe src="${clue.content}" frameborder="0" allowfullscreen></iframe></div>`;
+                    } else {
+                        let imageHtml = '';
+                        if (clue.image) {
+                            imageHtml = `<img src="${clue.image}" class="inventory-thumbnail" onclick="window.openImageViewer('${clue.image}')" alt="Evidence Thumbnail" style="width: 100%; max-height: 200px; object-fit: contain; border-radius: 4px; border: 3px solid #fff; margin: 12px 0 8px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">`;
+                        }
+                        contentHtml = `${imageHtml}<p class="inv-text" style="margin-top: ${clue.image ? '0' : '6px'};">${clue.content}</p>`;
+                    }
+
+                    card.innerHTML = `
+                        <div class="inv-header">
+                            <div class="inv-title">${clue.title}</div>
+                            <div class="inv-badge inv-badge-l${level}">Level ${level}</div>
+                        </div>
+                        ${contentHtml}
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            onValue(teamRef, (snapshot) => {
+                loadingEl.classList.add('hidden');
+
+                if (sessionStorage.getItem('briefingPlayed') === 'true') {
+                    appEl.classList.remove('hidden');
+                    bottomNav.classList.remove('hidden');
+                } else if (sessionStorage.getItem('introPlayed') === 'true') {
+                    document.getElementById('briefing-overlay').classList.add('visible');
+                }
+
+                const teamData = snapshot.val();
+                if (teamData) {
+                    balanceEl.textContent = teamData.tokens !== undefined ? teamData.tokens : '0';
+                    unlockedClues = teamData.unlocked_clues || [];
+
+                    // Update header title based on teamData.name or default fallback
+                    if (teamData.name && teamData.name.trim() !== '') {
+                        teamNameTitle.textContent = teamData.name;
+                    } else {
+                        teamNameTitle.textContent = `Group ${teamId}`;
+                    }
+
+                } else {
+                    balanceEl.textContent = '0';
+                    unlockedClues = [];
+                    teamNameTitle.textContent = `Group ${teamId}`;
+                }
+                renderInventory(unlockedClues);
+            }, (error) => {
+                console.error("Firebase read error:", error);
+                showAlert("Error", "Error connecting to database. Make sure rules allow read access.");
+            });
+
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const level = parseInt(btn.dataset.level);
+                    const cost = parseInt(btn.dataset.cost);
+                    const currentTokens = parseInt(balanceEl.textContent) || 0;
+
+                    if (currentTokens - cost < 1) {
+                        showAlert("Insufficient Tokens", `You need at least ${cost + 1} tokens to buy this clue. 1 token must be kept for playing the game!`);
+                        return;
+                    }
+
+                    if (level === 2 || level === 3) {
+                        const levelClues = level === 2 ? masterClues.level2 : masterClues.level3;
+                        const availableClues = levelClues.filter(c => !unlockedClues.includes(c.id));
+                        if (availableClues.length === 0) {
+                            showAlert("Inventory Full", "You already have all evidence for this level!");
+                            return;
+                        }
+                    }
+
+                    showConfirm(`Are you sure you want to spend ${cost} tokens to unlock this clue?`, async () => {
+                        btn.disabled = true;
+                        try {
+                            const result = await runTransaction(teamRef, (teamData) => {
+                                if (teamData === null) return;
+                                let tokens = teamData.tokens || 0;
+                                if (tokens - cost < 1) return;
+
+                                if (level === 2 || level === 3) {
+                                    let currentClues = teamData.unlocked_clues || [];
+                                    const levelClues = level === 2 ? masterClues.level2 : masterClues.level3;
+                                    const availableClues = levelClues.filter(c => !currentClues.includes(c.id));
+                                    if (availableClues.length === 0) return;
+
+                                    const randomIndex = Math.floor(Math.random() * availableClues.length);
+                                    teamData.unlocked_clues = [...currentClues, availableClues[randomIndex].id];
+                                }
+                                teamData.tokens = tokens - cost;
+                                return teamData;
+                            });
+
+                            if (result.committed) {
+                                if (level === 1) {
+                                    showAlert('Success', `Success! Deducted 1 Token. Show this to the Clue Master to ask your Yes/No question!`);
+                                } else {
+                                    const newTeamData = result.snapshot.val();
+                                    const acquiredClues = newTeamData.unlocked_clues;
+                                    const newClueId = acquiredClues[acquiredClues.length - 1];
+                                    const allClues = [...masterClues.level2, ...masterClues.level3];
+                                    const newClueObj = allClues.find(c => c.id === newClueId);
+
+                                    // Delay briefest moment to feel natural
+                                    setTimeout(() => showReveal(newClueObj), 150);
+                                }
+                            } else {
+                                showAlert('Transaction Failed', `You do not have enough tokens to safely buy this. (Requires ${cost + 1} tokens total)`);
+                            }
+                        } catch (e) {
+                            console.error("Tx failed", e);
+                            showAlert('Error', 'Error processing request. Check your connection.');
+                        } finally {
+                            btn.disabled = false;
+                        }
+                    });
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>

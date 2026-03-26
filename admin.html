@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Night Race | Admin Dashboard</title>
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* Modern Design System using CSS Variables */
+        :root {
+            --bg-color: #0b0f19;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #3b82f6;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --rose: #f43f5e;
+            --indigo: #6366f1;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --card-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15), transparent 30%),
+                radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.1), transparent 30%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            /* overridden by inner wrappers */
+        }
+
+        /* App Wrapper for authorization toggling */
+        #app-wrapper {
+            width: 100%;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Mobile-first constraints */
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin-top: 1rem;
+        }
+
+        .header-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffffff, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Grid for 10 Teams */
+        .team-grid {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: 1fr;
+        }
+
+        /* Two columns on tablets/desktop */
+        @media (min-width: 768px) {
+            .team-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* 3 Columns optionally for very wide screens */
+        @media (min-width: 1100px) {
+            .team-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .team-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .team-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .team-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .team-name {
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .token-balance {
+            font-size: 1.75rem;
+            font-weight: 800;
+            color: var(--amber);
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .action-grid .full-row {
+            grid-column: span 2;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 0.75rem 0.5rem;
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        .action-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Specific Button Styles */
+        .btn-play {
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .btn-play:hover:not(:disabled) {
+            background: rgba(59, 130, 246, 0.15);
+            border-color: var(--primary);
+        }
+
+        .btn-win {
+            border-bottom: 3px solid var(--emerald);
+            color: var(--emerald);
+        }
+
+        .btn-win:hover:not(:disabled) {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: var(--emerald);
+        }
+
+        .btn-lose {
+            border-bottom: 3px solid var(--rose);
+            color: var(--rose);
+        }
+
+        .btn-lose:hover:not(:disabled) {
+            background: rgba(244, 63, 94, 0.15);
+            border-color: var(--rose);
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--card-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            padding: 1rem 2rem;
+            border-radius: 100px;
+            font-weight: 600;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .toast-success {
+            color: var(--emerald);
+            border-color: var(--emerald);
+        }
+
+        .toast-error {
+            color: var(--rose);
+            border-color: var(--rose);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Authorization Script (Runs immediately blocking DOM rendering of secret parts if failed) -->
+    <script>
+        const PIN = "UMYEC2026";
+        // Prompt for PIN on page load
+        const userPin = prompt("Welcome Admin. Please enter PIN:");
+
+        if (userPin === PIN) {
+            window.isAuthorized = true;
+            // We will reveal the app wrapper once DOM is loaded safely
+        } else {
+            window.isAuthorized = false;
+            // Blank the screen
+            document.body.style.backgroundColor = "#000";
+            document.body.innerHTML = "";
+            alert("Unauthorized access. Screen will be blank.");
+        }
+    </script>
+
+    <!-- Main App Content (Hidden Initially) -->
+    <div id="app-wrapper">
+        <div class="container">
+            <div class="header-card">
+                <h1>Race Control Room</h1>
+                <div class="subtitle">Live Token Dashboard & Adjustments</div>
+            </div>
+
+            <!-- Commander Override: Global Broadcast -->
+            <div class="team-card" style="margin-bottom: 2rem; border-color: var(--rose);">
+                <div class="team-header" style="border-bottom-color: rgba(244, 63, 94, 0.3);">
+                    <div class="team-name" style="color: var(--text-main);">Commander Override: Global Broadcast</div>
+                </div>
+                <div style="margin-bottom: 1rem;">
+                    <textarea id="broadcast-msg" rows="3" placeholder="Enter priority message for all units..." style="width: 100%; padding: 0.75rem; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid var(--card-border); color: var(--text-main); font-family: inherit; resize: vertical;"></textarea>
+                </div>
+                <div class="action-grid">
+                    <button class="action-btn btn-win" id="send-broadcast-btn" style="border-bottom-color: var(--rose); color: var(--rose);">Send to All Units</button>
+                    <button class="action-btn" id="clear-broadcast-btn">Clear Broadcast</button>
+                </div>
+            </div>
+
+            <div id="teams-container" class="team-grid">
+                <!-- Teams rendered here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Component -->
+    <div id="toast" class="toast">Action Successful</div>
+
+    <!-- Firebase SDK & Initialization -->
+    <script type="module">
+        if (!window.isAuthorized) {
+            throw new Error("Execution stopped: Unauthorized.");
+        }
+
+        // Reveal the UI since we are polarized
+        document.getElementById('app-wrapper').style.display = 'flex';
+
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, onValue, runTransaction, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+        // ==========================================
+        // FIREBASE CONFIGURATION
+        // PASTE YOUR CONFIG OBJECT HERE LATER
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5_nwGNACrq7M01EsFFL-ZpQkbcqeARfE",
+            authDomain: "umyec-night-race-219f6.firebaseapp.com",
+            databaseURL: "https://umyec-night-race-219f6-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "umyec-night-race-219f6",
+            storageBucket: "umyec-night-race-219f6.firebasestorage.app",
+            messagingSenderId: "315048773537",
+            appId: "1:315048773537:web:878d1280726c61ffb86de0",
+            measurementId: "G-CF1RGK7LXQ"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        // Initialize App State
+        const db = getDatabase(app);
+
+        // --- DOM Elements ---
+        const teamsContainer = document.getElementById('teams-container');
+        const toastEl = document.getElementById('toast');
+        let toastTimeout;
+
+        function showToast(message, type = 'success') {
+            toastEl.textContent = message;
+            toastEl.className = `toast toast-${type} show`;
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toastEl.classList.remove('show');
+            }, 3000);
+        }
+
+        // --- Render the Team Grid ---
+        for (let i = 1; i <= 10; i++) {
+            const card = document.createElement('div');
+            card.className = 'team-card';
+            card.innerHTML = `
+                <div class="team-header">
+                    <div class="team-name">Group ${i}</div>
+                    <div class="token-balance" id="balance-${i}">--</div>
+                </div>
+                <div class="action-grid">
+                    <button class="action-btn btn-play full-row" data-team="${i}" data-amount="-1">Play (-1)</button>
+                    <button class="action-btn btn-win" data-team="${i}" data-amount="5">Win (+5)</button>
+                    <button class="action-btn btn-lose" data-team="${i}" data-amount="3">Lose (+3)</button>
+                </div>
+            `;
+            teamsContainer.appendChild(card);
+        }
+
+        if (db) {
+            // --- FIREBASE ACTIVE MODE ---
+
+            // Listeners for balances
+            for (let i = 1; i <= 10; i++) {
+                const tokenRef = ref(db, `teams/team${i}/tokens`);
+                onValue(tokenRef, (snapshot) => {
+                    const el = document.getElementById(`balance-${i}`);
+                    if (el) {
+                        const tokens = snapshot.val();
+                        el.textContent = tokens !== null ? tokens : '0';
+                    }
+                });
+            }
+
+            // Broadcast Logic
+            document.getElementById('send-broadcast-btn').addEventListener('click', async () => {
+                const msg = document.getElementById('broadcast-msg').value.trim();
+                if (!msg) {
+                    showToast('Message cannot be empty', 'error');
+                    return;
+                }
+                const passcode = prompt("Commander Passcode Required:");
+                if (passcode !== "UMYEC-MASTER-26") {
+                    alert("Access Denied");
+                    return;
+                }
+                try {
+                    const broadcastRef = ref(db, 'global_state/hq_broadcast');
+                    await set(broadcastRef, {
+                        message: msg,
+                        timestamp: serverTimestamp()
+                    });
+                    showToast('Broadcast Sent to All Units!', 'success');
+                    document.getElementById('broadcast-msg').value = '';
+                } catch (e) {
+                    console.error("Broadcast Error:", e);
+                    showToast('Failed to send broadcast', 'error');
+                }
+            });
+
+            document.getElementById('clear-broadcast-btn').addEventListener('click', async () => {
+                const passcode = prompt("Commander Passcode Required to clear:");
+                if (passcode !== "UMYEC-MASTER-26") {
+                    alert("Access Denied");
+                    return;
+                }
+                try {
+                    const broadcastRef = ref(db, 'global_state/hq_broadcast');
+                    await set(broadcastRef, {
+                        message: "",
+                        timestamp: serverTimestamp()
+                    });
+                    showToast('Broadcast Cleared', 'success');
+                } catch (e) {
+                    console.error("Clear Error:", e);
+                    showToast('Failed to clear broadcast', 'error');
+                }
+            });
+
+            // Button Event Delegation
+            teamsContainer.addEventListener('click', async (e) => {
+                if (!e.target.classList.contains('action-btn')) return;
+
+                const btn = e.target;
+                const teamId = btn.dataset.team;
+                const amount = parseInt(btn.dataset.amount);
+
+                // Optimistic visual feedback
+                btn.disabled = true;
+
+                try {
+                    const tokenRef = ref(db, `teams/team${teamId}/tokens`);
+                    await runTransaction(tokenRef, (currentTokens) => {
+                        let tokens = currentTokens || 0;
+                        return tokens + amount; // Apply addition/subtraction
+                    });
+
+                    const actionStr = amount > 0 ? `+${amount}` : `${amount}`;
+                    showToast(`Group ${teamId} updated (${actionStr})`, 'success');
+                } catch (error) {
+                    console.error("Transaction Error:", error);
+                    showToast(`Error updating Group ${teamId}`, 'error');
+                } finally {
+                    btn.disabled = false;
+                }
+            });
+
+        } else {
+            // --- DEMO MODE (NO FIREBASE CONFIG YET) ---
+
+            // Simulate loading balances
+            setTimeout(() => {
+                for (let i = 1; i <= 10; i++) {
+                    const el = document.getElementById(`balance-${i}`);
+                    if (el) el.textContent = '0';
+                }
+            }, 500);
+
+            // Mock clicking action
+            teamsContainer.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('action-btn')) return;
+
+                const btn = e.target;
+                const teamId = btn.dataset.team;
+                const amount = parseInt(btn.dataset.amount);
+                const el = document.getElementById(`balance-${teamId}`);
+
+                let current = parseInt(el.textContent) || 0;
+                el.textContent = current + amount;
+
+                const actionStr = amount > 0 ? `+${amount}` : `${amount}`;
+                showToast(`[Demo] Group ${teamId} updated (${actionStr})`, 'success');
+            });
+        }
+    </script>
+</body>
+
+</html>
