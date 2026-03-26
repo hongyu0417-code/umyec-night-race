@@ -981,12 +981,14 @@
             align-items: center;
             opacity: 0;
             pointer-events: none;
-            transition: opacity 0.3s ease;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
         #hq-broadcast-modal.visible {
             opacity: 1;
             pointer-events: auto;
+            visibility: visible;
         }
 
         .hq-broadcast-card {
@@ -1682,6 +1684,11 @@
                 document.getElementById('reveal-screen').classList.add('visible');
             };
 
+            // --- Firebase Logic ---
+            const db = getDatabase(app);
+            const teamRef = ref(db, `teams/team${teamId}`);
+            let unlockedClues = [];
+
             // --- HQ Broadcast Listener ---
             window.acknowledgeBroadcast = () => {
                 document.getElementById('hq-broadcast-modal').classList.remove('visible');
@@ -1701,11 +1708,6 @@
                     }
                 }
             });
-
-            // --- Firebase Logic ---
-            const db = getDatabase(app);
-            const teamRef = ref(db, `teams/team${teamId}`);
-            let unlockedClues = [];
 
             // Rename Action Logic
             renameParams.saveBtn.addEventListener('click', async () => {
